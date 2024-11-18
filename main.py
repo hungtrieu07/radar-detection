@@ -1,4 +1,3 @@
-import re
 import fitz  # PyMuPDF
 import cv2
 import numpy as np
