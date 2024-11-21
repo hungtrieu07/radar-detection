@@ -90,7 +90,15 @@ def process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86):
     pdf_document.close()
     print(f"Processed images (cropped) are saved in '{output_folder}'.")
 
-# Example usage
+# Example usage with all PDF files in a folder
+# pdf_folder = 'pdf'
+
+# for pdf_file in os.listdir(pdf_folder):
+#     if pdf_file.endswith(".pdf"):
+#         pdf_path = os.path.join(pdf_folder, pdf_file)
+#         process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86)
+
+# Example usage with a single PDF file
 pdf_file_path = r'pdf\200612AA_TSGx0001_tx8-rx8.pdf'
 output_folder = 'output'
 process_pdf(pdf_file_path, output_folder, max_intensity_threshold=0.86)
