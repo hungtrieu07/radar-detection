@@ -2,8 +2,6 @@ import fitz  # PyMuPDF
 import cv2
 import numpy as np
 import os
-import json
-import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d, median_filter
 
 def find_significant_low_points(histogram, min_threshold=0.2, dip_width=10):
@@ -54,39 +52,13 @@ def vertical_histogram_above_threshold(image, threshold, normalize=False, smooth
 
     return vertical_histogram
 
-def save_histogram_plot(horizontal_hist, vertical_hist, y_start, y_end, x_start, x_end, output_path):
-    plt.figure(figsize=(14, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(horizontal_hist, color='blue')
-    plt.axvline(y_start, color='red', linestyle='--', label='Start')
-    plt.axvline(y_end, color='green', linestyle='--', label='End')
-    plt.xlabel('Row (Y-Axis)')
-    plt.ylabel('Normalized Sum of Pixel Intensities > T')
-    plt.title('Smoothed Horizontal Histogram')
-    plt.legend()
-    plt.subplot(1, 2, 2)
-    plt.plot(vertical_hist, color='green')
-    plt.axvline(x_start, color='red', linestyle='--', label='Start')
-    plt.axvline(x_end, color='green', linestyle='--', label='End')
-    plt.xlabel('Column (X-Axis)')
-    plt.ylabel('Normalized Sum of Pixel Intensities > T')
-    plt.title('Smoothed Vertical Histogram')
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(output_path)
-    plt.close()
-
 def process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86):
     pdf_document = fitz.open(pdf_path)
     pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
 
-    roi_folder = os.path.join(output_folder, "extracted_regions")
-    histogram_folder = os.path.join(output_folder, "histograms")
-    os.makedirs(roi_folder, exist_ok=True)
-    os.makedirs(histogram_folder, exist_ok=True)
+    os.makedirs(output_folder, exist_ok=True)
 
     total_pages = len(pdf_document)
-    rectangles = []  # List to store each page's rectangle information
 
     for page_number in range(total_pages):
         page = pdf_document[page_number]
@@ -111,42 +83,14 @@ def process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86):
             print(f"Skipping page {page_number + 1} due to high intensity ({normalized_region_intensity:.2f}).")
             continue  # Skip this page if intensity is too high
 
-        # Store the information in the list
-        rectangles.append({
-            "pdf_filename": pdf_name,
-            "page_number": page_number + 1,
-            "coordinates": {
-                "top_left": {"x": int(x_start), "y": int(y_start)},
-                "bottom_right": {"x": int(x_end), "y": int(y_end)}
-            }
-        })
-
-        # Save histogram plot for this page
-        histogram_output_path = os.path.join(histogram_folder, f"{pdf_name}_page_{page_number+1}_histogram.jpg")
-        save_histogram_plot(horizontal_histogram, vertical_histogram, y_start, y_end, x_start, x_end, histogram_output_path)
-
-        # Draw and save highlighted image for this page
-        highlighted_image = cv2.cvtColor(page_image, cv2.COLOR_GRAY2BGR)
-        cv2.rectangle(highlighted_image, (x_start, y_start), (x_end, y_end), (0, 0, 255), 2)
-        highlighted_filename = os.path.join(roi_folder, f"{pdf_name}_page_{page_number+1}_highlighted.jpg")
-        cv2.imwrite(highlighted_filename, highlighted_image)
+        # Save cropped image (processed image)
+        cropped_filename = os.path.join(output_folder, f"{pdf_name}_page_{page_number+1}_cropped.jpg")
+        cv2.imwrite(cropped_filename, detected_region)
 
     pdf_document.close()
-    
-    # Output the JSON for this PDF file
-    pdf_output_json = json.dumps(rectangles, indent=4)
-    print(f"\nResults for '{pdf_name}':\n{pdf_output_json}\n")
-    return rectangles
+    print(f"Processed images (cropped) are saved in '{output_folder}'.")
 
 # Example usage
-pdf_folder = 'pdf'
-output_folder = 'output'
-os.makedirs(output_folder, exist_ok=True)
-
-# for pdf_file in os.listdir(pdf_folder):
-#     if pdf_file.endswith(".pdf"):
-#         pdf_path = os.path.join(pdf_folder, pdf_file)
-#         process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86)
-
 pdf_file_path = r'pdf\200612AA_TSGx0001_tx8-rx8.pdf'
+output_folder = 'output'
 process_pdf(pdf_file_path, output_folder, max_intensity_threshold=0.86)
