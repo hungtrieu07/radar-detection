@@ -51,29 +51,28 @@ def vertical_histogram_above_threshold(image, threshold, normalize=False, smooth
 
     return vertical_histogram
 
-# Main image processing script
-image_path = r'output\\200612AA_TSGx0001_tx8-rx8_page_2_original.jpg'  # Replace with your image path
-output_cropped_image = 'cropped_image.jpg'
+def process(image_path):
+    # Main image processing script
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-
-if image is None:
-    print("Error loading image.")
-else:
-    # Calculate histograms
-    horizontal_histogram = horizontal_histogram_above_threshold(image, threshold=240, normalize=True, smooth=True)
-    vertical_histogram = vertical_histogram_above_threshold(image, threshold=240, normalize=True, smooth=True)
-
-    # Find significant low points
-    y_start, y_end = find_significant_low_points(horizontal_histogram, min_threshold=0.2, dip_width=20)
-    x_start, x_end = find_significant_low_points(vertical_histogram, min_threshold=0.2, dip_width=20)
-
-    # Crop the image
-    cropped_image = image[y_start:y_end, x_start:x_end]
-
-    if cropped_image.size == 0:
-        print("No valid region detected for cropping.")
+    if image is None:
+        print("Error loading image.")
     else:
-        # Save cropped image
-        cv2.imwrite(output_cropped_image, cropped_image)
-        print(f"Cropped image saved as '{output_cropped_image}'.")
+        # Calculate histograms
+        horizontal_histogram = horizontal_histogram_above_threshold(image, threshold=240, normalize=True, smooth=True)
+        vertical_histogram = vertical_histogram_above_threshold(image, threshold=240, normalize=True, smooth=True)
+
+        # Find significant low points
+        y_start, y_end = find_significant_low_points(horizontal_histogram, min_threshold=0.2, dip_width=20)
+        x_start, x_end = find_significant_low_points(vertical_histogram, min_threshold=0.2, dip_width=20)
+
+        # Crop the image
+        cropped_image = image[y_start:y_end, x_start:x_end]
+        
+    return cropped_image
+
+# how to use the function
+if __name__ == "__main__":
+    image_path = r"output\\200612AA_TSGx0001_tx8-rx8_page_1_original.jpg"
+    cropped_image = process(image_path)
+    cv2.imwrite("cropped_image.jpg", cropped_image)
