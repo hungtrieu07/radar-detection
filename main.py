@@ -64,6 +64,8 @@ def process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86):
         page = pdf_document[page_number]
         pix = page.get_pixmap(dpi=300, colorspace=fitz.csGRAY)
         page_image = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width)
+        
+        cv2.imwrite(os.path.join(output_folder, f"{pdf_name}_page_{page_number+1}_original.jpg"), page_image)
 
         # Calculate histograms
         horizontal_histogram = horizontal_histogram_above_threshold(page_image, threshold=240, normalize=True, smooth=True)
