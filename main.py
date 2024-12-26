@@ -62,7 +62,7 @@ def process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86):
 
     for page_number in range(total_pages):
         page = pdf_document[page_number]
-        pix = page.get_pixmap(dpi=300, colorspace=fitz.csGRAY)
+        pix = page.get_pixmap(dpi=600, colorspace=fitz.csGRAY)
         page_image = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width)
         
         cv2.imwrite(os.path.join(output_folder, f"{pdf_name}_page_{page_number+1}_original.jpg"), page_image)
@@ -93,14 +93,16 @@ def process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86):
     print(f"Processed images (cropped) are saved in '{output_folder}'.")
 
 # Example usage with all PDF files in a folder
-# pdf_folder = 'pdf'
+pdf_folder = '26122024'
 
-# for pdf_file in os.listdir(pdf_folder):
-#     if pdf_file.endswith(".pdf"):
-#         pdf_path = os.path.join(pdf_folder, pdf_file)
-#         process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86)
+output_folder = 'output'
+
+for pdf_file in os.listdir(pdf_folder):
+    if pdf_file.endswith(".pdf"):
+        pdf_path = os.path.join(pdf_folder, pdf_file)
+        process_pdf(pdf_path, output_folder, max_intensity_threshold=0.86)
 
 # Example usage with a single PDF file
-pdf_file_path = r'pdf\200612AA_TSGx0001_tx8-rx8.pdf'
-output_folder = 'output'
-process_pdf(pdf_file_path, output_folder, max_intensity_threshold=0.86)
+# pdf_file_path = r'pdf\200612AA_TSGx0001_tx8-rx8.pdf'
+# output_folder = 'output'
+# process_pdf(pdf_file_path, output_folder, max_intensity_threshold=0.86)
